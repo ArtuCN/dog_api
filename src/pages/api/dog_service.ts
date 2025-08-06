@@ -1,31 +1,40 @@
 const server_url = 'https://dogapi.dog/api/v2';
-
+import type { Breed, BreedsResponse } from '@/models/breeds';
 import type { NextApiRequest, NextApiResponse } from 'next'
-export async function getBreeds()
-{
-    const response = await fetch(`${server_url}/breeds`);
-    if (!response.ok) {
-        throw new Error("Failed to fetch breeds");
-    }
 
 
-    return response.json().then(data => data.breeds.map((breed: any) => ({
-        id: breed.id
-    })));
-}
 
-
- 
-type ResponseData = {
-  message: string
-}
- 
-export default async function handler(
-  req: NextApiRequest,
-
+async function callBreeds(page: number) {
   
-  res: NextApiResponse<ResponseData>
-) {
-  const breeds = await getBreeds();
-  res.status(200).json(breeds);
+  const response = await fetch(server_url + '/breeds?page[number]=' + page);
+  const data = await response.json();
+
+  const res = data.data as BreedsResponse[];
+  res.forEach((breed) => {
+    console.log(breed);
+  });
+  return res;
+}
+
+export async function getFacts() {
+  const response = await fetch(server_url + '/facts')
+  const data = await response.json();
+  return data;
+}
+
+export async function getBreeds(page: number)
+{
+  const data = await callBreeds(page);
+  const res = data as unknown as Breed[];
+
+  return res;
+}
+
+
+export async function getBreedById(id: string)
+{
+  const data = await fetch(server_url + '/breed/' + id);
+  const res = data as unknown as Breed;
+
+  return res;
 }
