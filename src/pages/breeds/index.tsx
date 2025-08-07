@@ -1,8 +1,11 @@
 'use client';
+import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { Button, Card, Modal } from 'antd';
 import { useEffect, useState } from 'react';
 import { getBreeds, getBreedById } from '../api/dog_service';
-import type {Breed, BreedsResponse} from '@/models/breeds'
+import type { Breed, BreedAttributes } from '@/models/breeds';
+import BreedCard from '../../components/breed_card';
+import { findBreedById } from '@/utils/utils';
 
 
 export default function BreedsPage() {
@@ -11,19 +14,24 @@ export default function BreedsPage() {
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Breed | null>(null);
   const [visible, setVisible] = useState(false);
-
-  
-  const showDetails = async (id : string) => {
+  const showDetails = async (id: string) => {
     setVisible(true);
-    const breed = await getBreedById(id);
-    console.log(breed)
-    
+    try {
+      const breed = findBreedById(id, breeds);
+      if (breed)
+        setSelected(breed);
+      throw error;
+    } catch (err) {
+      console.error('Failed to fetch breed details:', err);
+    }
+  };
 
   useEffect(() => {
+    if (page >= 30)
+      setPage(1);
     getBreeds(page)
       .then((data) => {
-        setBreeds(data); 
-        console.log("all breeds: ", data);
+        setBreeds(data);
       })
       .catch((err) => {
         setError(true);
@@ -34,45 +42,75 @@ export default function BreedsPage() {
   if (error) return <p>Error loading breeds</p>;
 
   return (
+    <>
+      <div style={{ textAlign: 'center', fontSize: 40}}>
+
+        <Button
+          type="text"
+          style={{ fontSize: 32 }}
+          disabled={page === 1}
+          onClick={() => setPage(page - 1)}
+        >
+          <LeftOutlined />
+        </Button>
+
+        <span style={{ fontSize: 40, margin: '0 10px' }}>{page}</span>
+
+        <Button
+          type="text"
+          style={{ fontSize: 32 }}
+          onClick={() => setPage(page + 1)}
+        >
+          <RightOutlined />
+        </Button>
+
+      </div>
       <div className='breeds'>
-        <div style={{ marginTop: 20, display: 'flex', gap: 10}}>
-          <Button type="text" disabled={page === 1} onClick={() => setPage(page - 1)}>{"⬅️"}</Button>
-          <span>{page}</span>
-          <Button type="text" onClick={() => setPage(page + 1)}>{"➡️"}</Button>
-        </div>
-        <div style={{ 
+        <div style={{
+          
           display: 'grid',
           gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: '20px',
           justifyItems: 'center',
         }}>
-          {breeds.map((breed) => (
-            <Card
-              key={breed.id}
-              title={breed.attributes.name}
-              style={{ width: 400, backgroundColor: 'lightblue' }}>
-              {<Button onClick={() => showDetails(breed.id)}>Details</Button>}
-            </Card>
-              
-          ))}
+        {breeds.map((breed) => (
+          <Card
+            key={breed.id}
+            title={breed.attributes.name}
+            style={{ width: 600, height: 300, backgroundColor: 'lightblue' }}
+            >
+            <Button style={{padding:20}} onClick={() => showDetails(breed.id)}>Details</Button>
+            <div style={{paddingTop:10, textAlign:'left', fontSize: '18px'}}>
 
+              {breed.attributes.description}
+            </div>
+          </Card>
+        ))}
         </div>
-          <Modal
+        <div>
+        <Modal
+          open={visible}
           onCancel={() => setVisible(false)}
-          footer={<Button onClick={() => setVisible(false)}>Chiudi</Button>}
-          open = {visible && !!selected}
-          >
-            <Card>
-              {selected ? (
-                <div>
-                  <h2>{selected.id}</h2>
-                  {/* <p>{selected.attributes.name}</p> */}
-                </div>
-              ) : (
-                <p>Loading...</p>
-              )}
-            </Card>
-          </Modal>
+          footer={false}
+          closable={true}
+          style={{
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                zIndex: 1001,
+                width: 400,
+            }}
+        >
+          <Card style={{ backgroundColor: 'transparent' }}>
+            {selected ? (
+              <BreedCard breed={selected.attributes} index={selected.id} />
+            ) : (
+              <p>Loading...</p>
+            )}
+          </Card>
+        </Modal>
+        </div>
       </div>
+    </>
   );
 }

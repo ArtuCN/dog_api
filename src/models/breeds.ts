@@ -1,9 +1,9 @@
-type MinMax = {
+export type MinMax = {
   min: number;
   max: number;
 };
 
-type BreedAttributes = {
+export type BreedAttributes = {
   name: string;
   description: string;
   life: MinMax;

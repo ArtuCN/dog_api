@@ -11,8 +11,11 @@ const { Header, Content, Footer, Sider } = Layout;
 const routeTitles: { [key: string]: string } = {
   '/': 'Home',
   '/breeds': 'Breeds',
+  '/groups': 'Groups',
   '/settings': 'Settings',
+  '/facts': 'Facts',
 };
+
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const currentPath = router.pathname;
@@ -32,6 +35,12 @@ export default function App({ Component, pageProps }: AppProps) {
           </Menu.Item>
           <Menu.Item key="breeds">
             <Link href="/breeds">Breeds</Link>
+          </Menu.Item>
+          <Menu.Item key="groups">
+            <Link href="/groups">Groups</Link>
+          </Menu.Item>
+          <Menu.Item key="facts">
+            <Link href="/facts">Facts</Link>
           </Menu.Item>
           <Menu.Item key="settings">
             <Link href="/settings">Settings</Link>
